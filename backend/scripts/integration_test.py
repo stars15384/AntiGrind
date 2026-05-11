@@ -76,7 +76,8 @@ class APITester:
             extra = f" - {result['warning'][:50]}"
 
         print(
-            f"  {icon} {result['method']:4s} {result['endpoint']:<45s} | Status: {status:>3s} | Time: {time_str:>6s}{extra}"
+            f"  {icon} {result['method']:4s} {result['endpoint']:<45s} | "
+            f"Status: {status:>3s} | Time: {time_str:>6s}{extra}"
         )
 
     def login_as_admin(self):
@@ -102,7 +103,7 @@ class APITester:
             try:
                 error_data = response.json()
                 print(f"       Error: {error_data.get('detail', 'Unknown')}")
-            except:
+            except Exception:
                 print(f"       Response: {response.text[:100]}")
             return False
 
@@ -191,7 +192,8 @@ def run_all_tests():
         print(f"       Users: {data.get('users', {}).get('total', 'N/A')}")
         print(f"       Companies: {data.get('companies', {}).get('total', 'N/A')}")
         print(
-            f"       Pending Certifications: {data.get('certifications', {}).get('pending_review', 'N/A')}"
+            f"       Pending Certifications: "
+            f"{data.get('certifications', {}).get('pending_review', 'N/A')}"
         )
 
     # 待审核认证列表

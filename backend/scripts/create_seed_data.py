@@ -13,8 +13,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 os.chdir(Path(__file__).parent.parent)
 
-from app.database import async_session_maker
-from app.models import Certification, CertificationBadge, Company, User, WorkHourRecord
+from app.database import async_session_maker  # noqa: E402
+from app.models import (  # noqa: E402
+    Certification,
+    CertificationBadge,
+    Company,
+    User,
+    WorkHourRecord,
+)
 
 
 async def create_seed_data():
@@ -30,35 +36,35 @@ async def create_seed_data():
             {
                 "username": "admin",
                 "email": "admin@antigrind.com",
-                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # Admin123!
+                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # noqa: E501 Admin123!
                 "role": "admin",
                 "user_type": "admin",
             },
             {
                 "username": "demo_hr",
                 "email": "hr@greencorp.com",
-                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # Demo123!
+                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # noqa: E501 Demo123!
                 "role": "company",
                 "user_type": "hr",
             },
             {
                 "username": "employee_zhang",
                 "email": "zhang@test.com",
-                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # Test123!
+                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # noqa: E501 Test123!
                 "role": "employee",
                 "user_type": "consumer",
             },
             {
                 "username": "employee_li",
                 "email": "li@test.com",
-                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # Test123!
+                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # noqa: E501 Test123!
                 "role": "employee",
                 "user_type": "consumer",
             },
             {
                 "username": "employee_wang",
                 "email": "wang@test.com",
-                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # Test123!
+                "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.HZguGc8RDOOjO",  # noqa: E501 Test123!
                 "role": "employee",
                 "user_type": "consumer",
             },
@@ -346,7 +352,10 @@ async def create_seed_data():
 
                 if company.certification_status == "certified" and cert.status == "approved":
                     # 创建徽章（现在cert有id了）
-                    badge_code = f"AGI-{company.certification_level.upper()}-{datetime.utcnow().strftime('%Y%m%d')}-{idx + 1:03d}"
+                    badge_code = (  # noqa: E501
+                        f"AGI-{company.certification_level.upper()}-"
+                        f"{datetime.utcnow().strftime('%Y%m%d')}-{idx + 1:03d}"
+                    )
                     badge = CertificationBadge(
                         company_id=company.id,
                         certification_id=cert.id,
@@ -363,8 +372,9 @@ async def create_seed_data():
                     if cert.status in ["pending", "under_review"]
                     else "[ERROR]"
                 )
-                print(
-                    f"   [OK] Certification for '{company.name[:15]}': {cert.status} [{status_icon}]"
+                print(  # noqa: E501
+                    f"   [OK] Certification for '{company.name[:15]}': "
+                    f"{cert.status} [{status_icon}]"
                 )
 
         await session.flush()

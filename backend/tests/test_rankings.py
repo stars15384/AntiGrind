@@ -48,7 +48,6 @@ class TestRankingService:
 
         # 设置execute按顺序返回不同结果
         call_count = 0
-        original_execute = mock_session.execute
 
         async def execute_side_effect(*args, **kwargs):
             nonlocal call_count
@@ -158,7 +157,7 @@ class TestRankingService:
         pagination = result["pagination"]
         assert pagination["limit"] == 20, "limit应为20"
         assert pagination["offset"] == 40, "offset应为40"
-        assert pagination["has_more"] == True, "100条数据，offset=40，应有更多数据"
+        assert pagination["has_more"] is True, "100条数据，offset=40，应有更多数据"
 
     # ========== AGI等级计算测试 ==========
 

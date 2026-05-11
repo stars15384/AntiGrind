@@ -137,12 +137,14 @@ def main():
         if status == 200 and "users" in users_data:
             users_list = users_data["users"]
             print(
-                f"[OK] 成功获取 {len(users_list)} 个用户 (总计: {users_data.get('pagination', {}).get('total', 0)})"
+                f"[OK] 成功获取 {len(users_list)} 个用户 "
+                f"(总计: {users_data.get('pagination', {}).get('total', 0)})"
             )
             for i, user in enumerate(users_list[:2], 1):
                 print(f"  {i}. {user.get('username', 'N/A')} ({user.get('email', 'N/A')})")
                 print(
-                    f"     角色: {user.get('role', 'N/A')} | 状态: {'活跃' if user.get('is_active') else '禁用'}"
+                    f"     角色: {user.get('role', 'N/A')} | "
+                    f"状态: {'活跃' if user.get('is_active') else '禁用'}"
                 )
         else:
             print(f"[FAIL] 状态码: {status} | 数据: {users_data}")
@@ -160,7 +162,8 @@ def main():
             for i, comp in enumerate(comp_data[:2], 1):
                 print(f"  {i}. {comp.get('name', 'N/A')}")
                 print(
-                    f"     AGI: {comp.get('agi_score', 'N/A')} | 认证: {comp.get('certification_status', 'N/A')}"
+                    f"     AGI: {comp.get('agi_score', 'N/A')} | "
+                    f"认证: {comp.get('certification_status', 'N/A')}"
                 )
         elif status == 200 and "companies" in comp_data:
             admin_comps = comp_data["companies"]

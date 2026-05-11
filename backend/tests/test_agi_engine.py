@@ -50,6 +50,7 @@ def test_calculate_agi():
         shift_policy="frequent",
         vibe_score=10,
     )
-    # 新权重计算：hours(40*0.4=16) + weekend(25*0.25=6.25) + ot(15*0.15=2.25) + shift(10*0.1=1) + vibe(10*0.1=1) = 26.5
+    # 新权重计算：hours(40*0.4=16) + weekend(25*0.25=6.25)  # noqa: E501
+    # + ot(15*0.15=2.25) + shift(10*0.1=1) + vibe(10*0.1=1) = 26.5
     assert agi > 20  # 调整后的合理范围
     assert agi <= 100

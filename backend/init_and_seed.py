@@ -6,23 +6,31 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 os.chdir(Path(__file__).parent)
 
-from sqlalchemy import text
+from sqlalchemy import text  # noqa: E402
 
-from app.database import Base, engine
-from app.models import Certification, CertificationBadge, Company, User, WorkHourRecord
+from app.database import Base, engine  # noqa: E402
+from app.models import (  # noqa: E402
+    Certification,
+    CertificationBadge,
+    Company,
+    User,
+    WorkHourRecord,
+)
 
 
 async def init_and_seed():
     db_path = Path("./antigrind.db").resolve()
     print(f"DB absolute path: {db_path}")
     print(
-        f"DB exists before: {db_path.exists()} size={db_path.stat().st_size if db_path.exists() else 0}"
+        f"DB exists before: {db_path.exists()} "
+        f"size={db_path.stat().st_size if db_path.exists() else 0}"
     )
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print(
-        f"[OK] Tables created. DB exists after: {db_path.exists()} size={db_path.stat().st_size if db_path.exists() else 0}"
+        f"[OK] Tables created. DB exists after: {db_path.exists()} "
+        f"size={db_path.stat().st_size if db_path.exists() else 0}"
     )
 
     from datetime import datetime, timedelta
@@ -247,7 +255,10 @@ async def init_and_seed():
                 session.add(cert)
                 await session.flush()
                 if company.certification_status == "certified" and cert.status == "approved":
-                    badge_code = f"AGI-{company.certification_level.upper()}-{datetime.utcnow().strftime('%Y%m%d')}-{idx + 1:03d}"
+                    badge_code = (
+                        f"AGI-{company.certification_level.upper()}-"
+                        f"{datetime.utcnow().strftime('%Y%m%d')}-{idx + 1:03d}"
+                    )
                     session.add(
                         CertificationBadge(
                             company_id=company.id,

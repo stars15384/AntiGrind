@@ -61,21 +61,14 @@ class TestAdminDashboardStats:
 
     def test_dashboard_contains_user_stats(self):
         """测试仪表盘包含用户统计"""
-        # 验证逻辑：dashboard stats应包含users字段
-        expected_keys = ["total", "active_7d", "recent"]
-        # 实际实现需要在集成测试中完成
         pass
 
     def test_dashboard_contains_company_stats(self):
         """测试仪表盘包含企业统计"""
-        expected_keys = ["total", "certified"]
-        # 实际实现需要在集成测试中完成
         pass
 
     def test_dashboard_contains_certification_stats(self):
         """测试仪表盘包含认证统计"""
-        expected_key = "pending_review"
-        # 实际实现需要在集成测试中完成
         pass
 
 
@@ -108,12 +101,12 @@ class TestAdminCertificationReview:
 
     def test_approval_generates_badge(self, sample_review_data):
         """测试通过审核应生成徽章"""
-        assert sample_review_data["approved"] == True
+        assert sample_review_data["approved"] is True
         assert "certification_level" in sample_review_data
 
     def test_rejection_updates_status(self, rejection_data):
         """测试拒绝应更新状态为rejected"""
-        assert rejection_data["approved"] == False
+        assert rejection_data["approved"] is False
 
 
 class TestAdminUserManagement:

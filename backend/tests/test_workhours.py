@@ -100,7 +100,8 @@ class TestAGIEngine:
             shift_policy="frequent",
             vibe_score=0,
         )
-        # 计算验证：hours(40*0.4=16) + weekend(25*0.25=6.25) + ot(15*0.15=2.25) + shift(10*0.1=1) = 25.5
+        # 计算验证：hours(40*0.4=16) + weekend(25*0.25=6.25)  # noqa: E501
+        # + ot(15*0.15=2.25) + shift(10*0.1=1) = 25.5
         assert agi > 20  # 调整后的合理范围
         assert agi <= 100
 
