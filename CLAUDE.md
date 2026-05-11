@@ -114,3 +114,51 @@ Features are toggled via `backend/feature_flags.json`. Many infrastructure featu
 - `backend/app/services/agi_engine.py` - AGI calculation logic
 - `frontend/src/app/routes.tsx` - Route definitions
 - `docker-compose.yml` - Infrastructure services
+
+## Development Guidelines
+
+### Internationalization (i18n)
+
+This project supports both Chinese and English. When writing code:
+
+- **UI Text**: Use the i18n system (react-i18next). Add translation keys to locale files instead of hardcoded strings
+- **User-facing content**: Always provide both zh-CN and en-US translations
+- **API error messages**: Should be internationalized or use codes that can be mapped on the frontend
+- **Variable naming**: Use English for code identifiers, descriptive of purpose
+
+### Environment Configuration
+
+- **Development**: Uses SQLite (`sqlite+aiosqlite`) - no external database needed
+- **Production**: Uses PostgreSQL (`postgresql+asyncpg`)
+- Environment variables are defined in `backend/.env.example`
+- Copy `.env.example` to `.env` before development
+- Key variables: `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, `CORS_ORIGINS`
+
+### Code Style
+
+**Frontend (TypeScript/React):**
+- Use Tailwind CSS v4 with `@tailwindcss/vite` plugin
+- UI components: Radix UI primitives + MUI icons + Lucide icons
+- Use `class-variance-authority` (cva) for component variants
+- Use `clsx` + `tailwind-merge` for conditional classes
+- Use React Router v7 for routing
+- Form handling: `react-hook-form` + `zod` validation
+- Animations: `motion` (framer-motion alternative)
+
+**Backend (Python):**
+- Use async SQLAlchemy with `aiosqlite` / `asyncpg`
+- Use Pydantic v2 for schema validation
+- Use alembic for database migrations
+- API exceptions should use centralized exception handlers
+
+### Testing
+
+- Frontend: `vitest` with `@testing-library/react`
+- Backend: `pytest` with `pytest-asyncio` for async tests
+- Run `npm run test` / `pytest` before committing
+
+### Database
+
+- **Migrations**: Always use alembic (`alembic revision --autogenerate` + `alembic upgrade head`)
+- **Models**: SQLAlchemy async models in `backend/app/models/models.py`
+- **Development**: Auto-creates SQLite database from models on startup
