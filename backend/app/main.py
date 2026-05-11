@@ -22,7 +22,7 @@ from app.api import (
     work_hours_router,
 )
 from app.config import get_settings
-from app.exceptions import AppException
+from app.exceptions import AppError
 from app.middleware.performance import add_performance_headers
 
 settings = get_settings()
@@ -55,8 +55,8 @@ def create_app() -> FastAPI:
             headers={"Retry-After": "60"},
         )
 
-    @app.exception_handler(AppException)
-    async def app_exception_handler(request: Request, exc: AppException):
+    @app.exception_handler(AppError)
+    async def app_exception_handler(request: Request, exc: AppError):
         return JSONResponse(
             status_code=exc.status_code,
             content={

@@ -346,8 +346,9 @@ class PDFReportGenerator:
         disclaimer = """
         <br/>
         <font size="8" color="#9ca3af">
-        Disclaimer: This report is based on employee submissions and community verification.<br/>
-        The data reflects workplace conditions as reported and may not represent the complete picture.
+        Disclaimer: This report is based on employee submissions and community<br/>
+        verification. The data reflects workplace conditions as reported and may<br/>
+        not represent the complete picture.
         </font>
         """
         elements.append(Paragraph(disclaimer, self.styles["ChineseCaption"]))

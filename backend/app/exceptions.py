@@ -1,4 +1,4 @@
-class AppException(Exception):
+class AppError(Exception):
     """应用基础异常类"""
 
     def __init__(self, status_code: int, detail: str, error_code: str = None):
@@ -8,7 +8,7 @@ class AppException(Exception):
         super().__init__(self.detail)
 
 
-class NotFoundError(AppException):
+class NotFoundError(AppError):
     """资源未找到"""
 
     def __init__(self, resource: str, resource_id: str = None):
@@ -18,7 +18,7 @@ class NotFoundError(AppException):
         super(404, message, "NOT_FOUND")
 
 
-class ValidationError(AppException):
+class ValidationError(AppError):
     """验证错误"""
 
     def __init__(self, detail: str, field: str = None):
@@ -27,21 +27,21 @@ class ValidationError(AppException):
         super(400, detail, "VALIDATION_ERROR")
 
 
-class AuthenticationError(AppException):
+class AuthenticationError(AppError):
     """认证错误"""
 
     def __init__(self, detail: str = "认证失败"):
         super(401, detail, "AUTHENTICATION_FAILED")
 
 
-class AuthorizationError(AppException):
+class AuthorizationError(AppError):
     """权限不足"""
 
     def __init__(self, detail: str = "权限不足，无法执行此操作"):
         super(403, detail, "FORBIDDEN")
 
 
-class ConflictError(AppException):
+class ConflictError(AppError):
     """资源冲突（如重复创建）"""
 
     def __init__(self, resource: str, detail: str = None):
@@ -49,26 +49,22 @@ class ConflictError(AppException):
         super(409, message, "CONFLICT")
 
 
-class RateLimitExceededError(AppException):
+class RateLimitExceededError(AppError):
     """请求过于频繁"""
 
     def __init__(self, retry_after: int = 60):
-        super(
-            429,
-            f"请求过于频繁，请 {retry_after} 秒后重试",
-            "RATE_LIMIT_EXCEEDED",
-        )
+        super(429, f"请求过于频繁，请 {retry_after} 秒后重试", "RATE_LIMIT_EXCEEDED")
         self.retry_after = retry_after
 
 
-class BusinessLogicError(AppException):
+class BusinessLogicError(AppError):
     """业务逻辑错误"""
 
     def __init__(self, detail: str, error_code: str = "BUSINESS_ERROR"):
         super(422, detail, error_code)
 
 
-class ExternalServiceError(AppException):
+class ExternalServiceError(AppError):
     """外部服务调用失败"""
 
     def __init__(self, service_name: str, detail: str = None):

@@ -4,10 +4,10 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.exceptions import AppException
+from app.exceptions import AppError
 
 
-async def app_exception_handler(request: Request, exc: AppException):
+async def app_exception_handler(request: Request, exc: AppError):
     """处理应用自定义异常"""
     return JSONResponse(
         status_code=exc.status_code,
