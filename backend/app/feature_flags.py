@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional
 import json
-from pathlib import Path
-from functools import lru_cache
 import logging
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +28,9 @@ class FeatureFlags:
             return
 
         try:
-            with open(config_file, 'r', encoding='utf-8') as f:
+            with open(config_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                self._flags = data.get('features', {})
+                self._flags = data.get("features", {})
                 logger.info(f"Loaded {len(self._flags)} feature flags from {config_file}")
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse feature flags config: {e}")
@@ -74,7 +74,7 @@ class FeatureFlags:
         if flag is None:
             logger.warning(f"Unknown feature flag: {feature_name}, defaulting to False")
             return False
-        return flag.get('enabled', False)
+        return flag.get("enabled", False)
 
     def is_disabled(self, feature_name: str) -> bool:
         """检查特性是否禁用"""
@@ -90,18 +90,15 @@ class FeatureFlags:
 
     def list_enabled_features(self) -> Dict[str, Dict[str, Any]]:
         """列出所有启用的特性"""
-        return {k: v for k, v in self._flags.items() if v.get('enabled', False)}
+        return {k: v for k, v in self._flags.items() if v.get("enabled", False)}
 
     def list_disabled_features(self) -> Dict[str, Dict[str, Any]]:
         """列出所有禁用的特性"""
-        return {k: v for k, v in self._flags.items() if not v.get('enabled', False)}
+        return {k: v for k, v in self._flags.items() if not v.get("enabled", False)}
 
     def list_features_by_category(self, category: str) -> Dict[str, Dict[str, Any]]:
         """按类别列出特性"""
-        return {
-            k: v for k, v in self._flags.items()
-            if v.get('category') == category
-        }
+        return {k: v for k, v in self._flags.items() if v.get("category") == category}
 
 
 @lru_cache()
@@ -119,6 +116,7 @@ def require_feature(feature_name: str):
             ...
     """
     from functools import wraps
+
     from fastapi import HTTPException
 
     def decorator(func):
@@ -138,7 +136,9 @@ def require_feature(feature_name: str):
                     },
                 )
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 

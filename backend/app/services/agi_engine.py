@@ -126,11 +126,7 @@ class AGIEngine:
 
         try:
             cache_key = f"{self.CACHE_PREFIX}{company_id}"
-            await self.redis.setex(
-                cache_key,
-                self.CACHE_TTL_SECONDS,
-                str(agi_score)
-            )
+            await self.redis.setex(cache_key, self.CACHE_TTL_SECONDS, str(agi_score))
             logger.debug(f"Cached AGI for company {company_id}: {agi_score}")
         except Exception as e:
             logger.warning(f"Failed to cache AGI in Redis: {e}")
@@ -149,6 +145,7 @@ class AGIEngine:
 
     async def calculate_company_agi(self, company_id: Any, db: Any) -> float:
         from sqlalchemy import select
+
         from app.models import WorkHourRecord
 
         cached_agi = await self.get_cached_agi(str(company_id))

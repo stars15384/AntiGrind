@@ -1,6 +1,3 @@
-from fastapi import HTTPException
-
-
 class AppException(Exception):
     """应用基础异常类"""
 

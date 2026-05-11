@@ -1,24 +1,25 @@
 import traceback
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.api import (
+    admin_router,
+    attendance_router,
     auth_router,
+    certifications_router,
     companies_router,
     evidences_router,
-    scan_router,
-    work_hours_router,
-    certifications_router,
-    attendance_router,
+    features_router,
     qa_router,
     rankings_router,
-    admin_router,
-    features_router,
+    scan_router,
+    work_hours_router,
 )
 from app.config import get_settings
 from app.exceptions import AppException
@@ -69,7 +70,7 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(IntegrityError)
     async def integrity_error_handler(request: Request, exc: IntegrityError):
-        error_msg = str(exc.orig) if hasattr(exc, 'orig') else str(exc)
+        error_msg = str(exc.orig) if hasattr(exc, "orig") else str(exc)
 
         if "UNIQUE constraint" in error_msg or "duplicate" in error_msg.lower():
             return JSONResponse(

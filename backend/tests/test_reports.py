@@ -3,10 +3,7 @@ Tests for PDF Report Generation Service
 覆盖: report_service.py
 """
 
-import io
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.services.report_service import PDFReportGenerator
 
@@ -78,7 +75,7 @@ class TestPDFReportGenerator:
         assert len(pdf_bytes) > 1000, "PDF文件大小应大于1KB"
 
         # 验证PDF文件头
-        assert pdf_bytes[:5] == b'%PDF-', "应以PDF魔术数字开头"
+        assert pdf_bytes[:5] == b"%PDF-", "应以PDF魔术数字开头"
 
     def test_generate_report_with_recommendations(self):
         """测试带改进建议的报告生成"""
@@ -246,10 +243,11 @@ class TestPDFReportGenerator:
     def test_generation_performance(self):
         """测试PDF生成性能（应在2秒内完成）"""
         import time
+
         data = self._get_sample_data()
 
         start_time = time.time()
-        
+
         for _ in range(3):  # 连续生成3次
             self.generator.generate_certification_report(
                 company_info=data["company_info"],
@@ -257,9 +255,9 @@ class TestPDFReportGenerator:
                 work_hours_stats=data["work_hours_stats"],
                 certification_info=data["certification_info"],
             )
-        
+
         elapsed_time = time.time() - start_time
-        
+
         # 平均每次生成时间应小于2秒
         avg_time = elapsed_time / 3
         assert avg_time < 2.0, f"平均生成时间 {avg_time:.2f}s 超过2秒限制"

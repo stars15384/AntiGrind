@@ -1,13 +1,14 @@
 import hashlib
 from datetime import datetime, timedelta
 from typing import Optional
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Certification, CertificationBadge, Company, User
+from app.exceptions import BusinessLogicError, ConflictError, NotFoundError
+from app.models import Certification, CertificationBadge, Company
 from app.schemas import CertificationCreate, CertificationReview
-from app.exceptions import NotFoundError, ValidationError, ConflictError, BusinessLogicError
 
 
 class CertificationService:
@@ -46,7 +47,7 @@ class CertificationService:
     ) -> Certification:
         """
         申请企业认证
-        
+
         业务规则：
         1. 企业必须存在
         2. 不能有重复的进行中申请
@@ -62,7 +63,7 @@ class CertificationService:
             policy_document_url=data.policy_document_url,
             evidence_urls=data.evidence_urls,
         )
-        
+
         self.db.add(certification)
         company.certification_status = "pending"
 
@@ -93,7 +94,7 @@ class CertificationService:
         if certification.status not in ["pending", "under_review"]:
             raise BusinessLogicError(
                 f"当前状态 {certification.status} 不允许审核",
-                error_code="INVALID_STATUS_TRANSITION"
+                error_code="INVALID_STATUS_TRANSITION",
             )
 
     async def review_certification(
@@ -104,11 +105,11 @@ class CertificationService:
     ) -> Certification:
         """
         审核认证申请
-        
+
         状态机：
         pending/under_review → approved (通过)
         pending/under_review → rejected (拒绝)
-        
+
         通过时副作用：
         1. 更新企业状态为certified
         2. 设置认证等级和有效期
@@ -146,11 +147,8 @@ class CertificationService:
             company.certification_level = data.certification_level or "bronze"
             company.certification_expires_at = certification.expires_at
 
-        badge_code = self._generate_badge_code(
-            certification.company_id,
-            certification.id
-        )
-        
+        badge_code = self._generate_badge_code(certification.company_id, certification.id)
+
         badge = CertificationBadge(
             company_id=certification.company_id,
             certification_id=certification.id,
@@ -189,8 +187,7 @@ class CertificationService:
     async def get_badge_by_code(self, badge_code: str) -> CertificationBadge:
         """根据徽章编码获取徽章信息"""
         result = await self.db.execute(
-            select(CertificationBadge)
-            .where(CertificationBadge.badge_code == badge_code)
+            select(CertificationBadge).where(CertificationBadge.badge_code == badge_code)
         )
         badge = result.scalar_one_or_none()
         if not badge:
@@ -200,8 +197,9 @@ class CertificationService:
     async def get_badge_for_certification(self, certification_id: str) -> CertificationBadge:
         """获取指定认证的徽章"""
         result = await self.db.execute(
-            select(CertificationBadge)
-            .where(CertificationBadge.certification_id == certification_id)
+            select(CertificationBadge).where(
+                CertificationBadge.certification_id == certification_id
+            )
         )
         badge = result.scalar_one_or_none()
         if not badge:

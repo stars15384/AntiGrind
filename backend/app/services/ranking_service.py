@@ -1,10 +1,11 @@
-from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
-from sqlalchemy import select, func, case, desc
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models import Company, Certification, WorkHourRecord
+from app.models import Company
 
 
 class RankingService:
@@ -68,19 +69,23 @@ class RankingService:
         for idx, company in enumerate(companies, start=offset + 1):
             level = self._get_agi_level(float(company.agi_score) if company.agi_score else 0)
 
-            rankings.append({
-                "rank": idx,
-                "company_id": company.id,
-                "name": company.name,
-                "agi_score": float(company.agi_score) if company.agi_score else 0,
-                "level": level,
-                "industry": company.industry or "Unknown",
-                "region": region or "Unknown",
-                "employee_count": 0,
-                "certification_level": company.certification_level or "bronze",
-                "trend": "stable",
-                "certification_expires_at": company.certification_expires_at.isoformat() if company.certification_expires_at else None,
-            })
+            rankings.append(
+                {
+                    "rank": idx,
+                    "company_id": company.id,
+                    "name": company.name,
+                    "agi_score": float(company.agi_score) if company.agi_score else 0,
+                    "level": level,
+                    "industry": company.industry or "Unknown",
+                    "region": region or "Unknown",
+                    "employee_count": 0,
+                    "certification_level": company.certification_level or "bronze",
+                    "trend": "stable",
+                    "certification_expires_at": company.certification_expires_at.isoformat()
+                    if company.certification_expires_at
+                    else None,
+                }
+            )
 
         industries_result = await db.execute(
             select(Company.industry, func.count(Company.id))
@@ -90,8 +95,7 @@ class RankingService:
             .limit(10)
         )
         industries = [
-            {"name": row[0] or "Other", "count": row[1]}
-            for row in industries_result.all()
+            {"name": row[0] or "Other", "count": row[1]} for row in industries_result.all()
         ]
 
         green_count = sum(1 for r in rankings if r["level"] == "green")
@@ -148,9 +152,7 @@ class RankingService:
         if level == "green":
             query = query.where(Company.agi_score <= 30)
         elif level == "yellow":
-            query = query.where(
-                (Company.agi_score > 30) & (Company.agi_score <= 60)
-            )
+            query = query.where((Company.agi_score > 30) & (Company.agi_score <= 60))
         elif level == "red":
             query = query.where(Company.agi_score > 60)
 
@@ -191,14 +193,16 @@ class RankingService:
         comparison_data = []
         for row in industry_stats.all():
             avg_score = float(row.avg_agi) if row.avg_agi else 0
-            comparison_data.append({
-                "industry": row.industry or "Other",
-                "company_count": row.count,
-                "avg_agi_score": round(avg_score, 2),
-                "best_score": float(row.min_agi) if row.min_agi else 0,
-                "worst_score": float(row.max_agi) if row.max_agi else 0,
-                "level": self._get_agi_level(avg_score),
-            })
+            comparison_data.append(
+                {
+                    "industry": row.industry or "Other",
+                    "company_count": row.count,
+                    "avg_agi_score": round(avg_score, 2),
+                    "best_score": float(row.min_agi) if row.min_agi else 0,
+                    "worst_score": float(row.max_agi) if row.max_agi else 0,
+                    "level": self._get_agi_level(avg_score),
+                }
+            )
 
         return {
             "industries": comparison_data,

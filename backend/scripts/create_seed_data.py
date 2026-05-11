@@ -4,8 +4,8 @@ AntiGrind Seed Data Generator
 """
 
 import asyncio
-import sys
 import os
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -13,9 +13,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 os.chdir(Path(__file__).parent.parent)
 
-from app.database import async_session_maker, engine
-from app.models import User, Company, WorkHourRecord, Certification, CertificationBadge
-from app.services.agi_engine import AGIEngine
+from app.database import async_session_maker
+from app.models import Certification, CertificationBadge, Company, User, WorkHourRecord
 
 
 async def create_seed_data():
@@ -199,12 +198,20 @@ async def create_seed_data():
             session.add(company)
             created_companies.append(company)
 
-            level_emoji = "[GOLD]" if company_data.get("certification_level") == "gold" else \
-                         "[SILVER]" if company_data.get("certification_level") == "silver" else \
-                         "[BRONZE]" if company_data.get("certification_level") == "bronze" else "[NONE]"
+            level_emoji = (
+                "[GOLD]"
+                if company_data.get("certification_level") == "gold"
+                else "[SILVER]"
+                if company_data.get("certification_level") == "silver"
+                else "[BRONZE]"
+                if company_data.get("certification_level") == "bronze"
+                else "[NONE]"
+            )
 
-            print(f"   [OK] Created company: {company_data['name'][:20]} "
-                  f"(AGI: {company_data['agi_score']}) [{level_emoji}]")
+            print(
+                f"   [OK] Created company: {company_data['name'][:20]} "
+                f"(AGI: {company_data['agi_score']}) [{level_emoji}]"
+            )
 
         await session.flush()
 
@@ -212,14 +219,54 @@ async def create_seed_data():
         print("\n[TIME] Creating work hour records...")
 
         work_hour_templates = [
-            {"weekly_hours": 40, "weekend_policy": "double_rest", "overtime_compensation": "legal", "shift_policy": "no_shift"},
-            {"weekly_hours": 42, "weekend_policy": "double_rest", "overtime_compensation": "legal", "shift_policy": "no_shift"},
-            {"weekly_hours": 45, "weekend_policy": "big_small_week", "overtime_compensation": "legal", "shift_policy": "occasional"},
-            {"weekly_hours": 48, "weekend_policy": "single_rest", "overtime_compensation": "fixed_subsidy", "shift_policy": "occasional"},
-            {"weekly_hours": 55, "weekend_policy": "single_rest", "overtime_compensation": "unpaid", "shift_policy": "frequent"},
-            {"weekly_hours": 60, "weekend_policy": "no_rest", "overtime_compensation": "unpaid", "shift_policy": "frequent"},
-            {"weekly_hours": 50, "weekend_policy": "big_small_week", "overtime_compensation": "fixed_subsidy", "shift_policy": "no_shift"},
-            {"weekly_hours": 44, "weekend_policy": "double_rest", "overtime_compensation": "legal", "shift_policy": "no_shift"},
+            {
+                "weekly_hours": 40,
+                "weekend_policy": "double_rest",
+                "overtime_compensation": "legal",
+                "shift_policy": "no_shift",
+            },
+            {
+                "weekly_hours": 42,
+                "weekend_policy": "double_rest",
+                "overtime_compensation": "legal",
+                "shift_policy": "no_shift",
+            },
+            {
+                "weekly_hours": 45,
+                "weekend_policy": "big_small_week",
+                "overtime_compensation": "legal",
+                "shift_policy": "occasional",
+            },
+            {
+                "weekly_hours": 48,
+                "weekend_policy": "single_rest",
+                "overtime_compensation": "fixed_subsidy",
+                "shift_policy": "occasional",
+            },
+            {
+                "weekly_hours": 55,
+                "weekend_policy": "single_rest",
+                "overtime_compensation": "unpaid",
+                "shift_policy": "frequent",
+            },
+            {
+                "weekly_hours": 60,
+                "weekend_policy": "no_rest",
+                "overtime_compensation": "unpaid",
+                "shift_policy": "frequent",
+            },
+            {
+                "weekly_hours": 50,
+                "weekend_policy": "big_small_week",
+                "overtime_compensation": "fixed_subsidy",
+                "shift_policy": "no_shift",
+            },
+            {
+                "weekly_hours": 44,
+                "weekend_policy": "double_rest",
+                "overtime_compensation": "legal",
+                "shift_policy": "no_shift",
+            },
         ]
 
         total_records = 0
@@ -244,7 +291,7 @@ async def create_seed_data():
 
                 record = WorkHourRecord(
                     company_id=company.id,
-                    user_id=created_users[min(i+2, len(created_users)-1)].id,  # 分配给员工用户
+                    user_id=created_users[min(i + 2, len(created_users) - 1)].id,  # 分配给员工用户
                     weekly_hours=template["weekly_hours"],
                     weekend_policy=template["weekend_policy"],
                     overtime_compensation=template["overtime_compensation"],
@@ -271,7 +318,9 @@ async def create_seed_data():
                 cert = Certification(
                     company_id=company.id,
                     submitted_by=created_users[1].id,  # demo_hr 提交
-                    status=company.certification_status if company.certification_status != "certified" else "approved",
+                    status=company.certification_status
+                    if company.certification_status != "certified"
+                    else "approved",
                     policy_document_url=f"https://example.com/policies/{company.id}.pdf",
                     evidence_urls='["https://example.com/evidence1.jpg", "https://example.com/evidence2.pdf"]',
                 )
@@ -281,23 +330,23 @@ async def create_seed_data():
                     cert.reviewed_by = created_users[0].id  # admin审核
                     cert.approved_at = datetime.utcnow() - timedelta(days=30 * (idx + 1))
                     cert.expires_at = datetime.utcnow() + timedelta(days=365 - 30 * idx)
-                    cert.review_notes="符合反内卷标准，予以通过"
+                    cert.review_notes = "符合反内卷标准，予以通过"
 
                 elif company.certification_status == "rejected":
                     cert.status = "rejected"
                     cert.reviewed_by = created_users[0].id
-                    cert.review_notes="部分指标未达标，建议改进后重新申请"
+                    cert.review_notes = "部分指标未达标，建议改进后重新申请"
 
                 elif company.certification_status == "pending":
                     cert.status = "under_review"
-                    cert.review_notes=None
+                    cert.review_notes = None
 
                 session.add(cert)
                 await session.flush()  # Flush to get certification ID
 
                 if company.certification_status == "certified" and cert.status == "approved":
                     # 创建徽章（现在cert有id了）
-                    badge_code = f"AGI-{company.certification_level.upper()}-{datetime.utcnow().strftime('%Y%m%d')}-{idx+1:03d}"
+                    badge_code = f"AGI-{company.certification_level.upper()}-{datetime.utcnow().strftime('%Y%m%d')}-{idx + 1:03d}"
                     badge = CertificationBadge(
                         company_id=company.id,
                         certification_id=cert.id,
@@ -307,10 +356,16 @@ async def create_seed_data():
                     session.add(badge)
                 certifications_created += 1
 
-                status_icon = "[OK]" if cert.status == "approved" else \
-                             "[PENDING]" if cert.status in ["pending", "under_review"] else \
-                             "[ERROR]"
-                print(f"   [OK] Certification for '{company.name[:15]}': {cert.status} [{status_icon}]")
+                status_icon = (
+                    "[OK]"
+                    if cert.status == "approved"
+                    else "[PENDING]"
+                    if cert.status in ["pending", "under_review"]
+                    else "[ERROR]"
+                )
+                print(
+                    f"   [OK] Certification for '{company.name[:15]}': {cert.status} [{status_icon}]"
+                )
 
         await session.flush()
         print(f"\n   [CERT] Total certifications: {certifications_created}")
@@ -319,26 +374,26 @@ async def create_seed_data():
         print("\n[SAVE] Committing all changes to database...")
         await session.commit()
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("[OK] SEED DATA CREATION COMPLETED SUCCESSFULLY!")
-        print("="*60)
-        print(f"\n[STATS] Summary:")
+        print("=" * 60)
+        print("\n[STATS] Summary:")
         print(f"   [PEOPLE] Users created: {len(created_users)}")
         print(f"   [COMPANY] Companies created: {len(created_companies)}")
         print(f"   [TIME] Work hour records: {total_records}")
         print(f"   [CERT] Certifications: {certifications_created}")
         print("\n[KEY] Login Credentials:")
-        print(f"   Admin:     admin / Admin123!")
-        print(f"   HR:        demo_hr / Demo123!")
-        print(f"   Employee:  employee_zhang / Test123!")
-        print(f"              employee_li / Test123!")
-        print(f"              employee_wang / Test123!")
+        print("   Admin:     admin / Admin123!")
+        print("   HR:        demo_hr / Demo123!")
+        print("   Employee:  employee_zhang / Test123!")
+        print("              employee_li / Test123!")
+        print("              employee_wang / Test123!")
         print("\n[WEB] Access URLs:")
-        print(f"   Frontend: http://localhost:5173")
-        print(f"   Backend API: http://localhost:8000/docs")
-        print(f"   Rankings: http://localhost:5173/rankings")
-        print(f"   Admin Panel: http://localhost:5173/admin")
-        print("\n" + "="*60)
+        print("   Frontend: http://localhost:5173")
+        print("   Backend API: http://localhost:8000/docs")
+        print("   Rankings: http://localhost:5173/rankings")
+        print("   Admin Panel: http://localhost:5173/admin")
+        print("\n" + "=" * 60)
 
 
 if __name__ == "__main__":
@@ -347,5 +402,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n[ERROR] Error creating seed data: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

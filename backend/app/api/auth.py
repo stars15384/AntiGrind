@@ -10,10 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import get_db
+from app.middleware.rate_limit import check_login_rate_limit, check_registration_rate_limit
 from app.models import User
 from app.schemas import Token, TokenPayload, UserCreate, UserResponse
 from app.services.captcha_service import captcha_service
-from app.middleware.rate_limit import check_registration_rate_limit, check_login_rate_limit
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -22,11 +22,11 @@ settings = get_settings()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
 
 def get_password_hash(password: str) -> str:
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def create_access_token(data: dict) -> str:
@@ -86,7 +86,7 @@ async def register(
         )
         if not valid:
             raise HTTPException(status_code=400, detail="验证码错误或已过期")
-    
+
     result = await db.execute(select(User).where(User.username == user_data.username))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Username already registered")
@@ -113,12 +113,10 @@ async def login(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     await check_login_rate_limit(request)
-    
-    client_ip = request.client.host if request.client else "unknown"
-    
+
     captcha_code = form_data.__dict__.get("captcha_code", "")
     captcha_session_id = form_data.__dict__.get("captcha_session_id", "")
-    
+
     if captcha_code and captcha_session_id:
         valid = await captcha_service.verify_captcha(captcha_session_id, captcha_code)
         if not valid:

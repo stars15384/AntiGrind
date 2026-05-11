@@ -1,4 +1,5 @@
 import traceback
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -51,7 +52,10 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 async def integrity_error_handler(request: Request, exc: IntegrityError):
     """处理数据库完整性错误（如唯一约束冲突）"""
-    error_msg = str(exc.orig) if hasattr(exc, 'orig') else str(exc)
+    from app.config import get_settings
+
+    settings = get_settings()
+    error_msg = str(exc.orig) if hasattr(exc, "orig") else str(exc)
 
     if "UNIQUE constraint" in error_msg or "duplicate" in error_msg.lower():
         return JSONResponse(
@@ -81,6 +85,9 @@ async def integrity_error_handler(request: Request, exc: IntegrityError):
 
 async def sqlalchemy_error_handler(request: Request, exc: SQLAlchemyError):
     """处理数据库错误"""
+    from app.config import get_settings
+
+    settings = get_settings()
     return JSONResponse(
         status_code=500,
         content={

@@ -1,11 +1,12 @@
-from typing import Optional, List
+from typing import List, Optional
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
-from app.models import Company, WorkHourRecord, User, Product
-from app.schemas import CompanyCreate, CompanyUpdate, CompanySearchResult
-from app.exceptions import NotFoundError, ValidationError
+from app.exceptions import NotFoundError
+from app.models import Company, WorkHourRecord
+from app.schemas import CompanyCreate, CompanySearchResult, CompanyUpdate
 
 
 class CompanyService:
@@ -34,20 +35,20 @@ class CompanyService:
     async def create_company(self, data: CompanyCreate, creator_id: str) -> Company:
         """
         创建新企业
-        
+
         业务规则：
         1. 验证必填字段
         2. 设置默认值
         3. 关联创建者（如果适用）
         """
         company_data = data.model_dump()
-        
+
         company = Company(**company_data)
         self.db.add(company)
-        
+
         await self.db.commit()
         await self.db.refresh(company)
-        
+
         return company
 
     async def update_company(
@@ -57,18 +58,18 @@ class CompanyService:
     ) -> Company:
         """
         更新企业信息
-        
+
         支持部分更新，只更新提供的字段
         """
         company = await self.get_company(company_id)
-        
+
         update_data = data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(company, field, value)
 
         await self.db.commit()
         await self.db.refresh(company)
-        
+
         return company
 
     async def list_companies(
@@ -81,7 +82,7 @@ class CompanyService:
     ) -> tuple[List[Company], int]:
         """
         获取企业列表（支持分页、筛选、排序）
-        
+
         返回: (企业列表, 总数)
         """
         query = select(Company).options(selectinload(Company.work_hour_records))
@@ -119,13 +120,13 @@ class CompanyService:
     ) -> List[CompanySearchResult]:
         """
         搜索企业
-        
+
         搜索范围：名称、描述、网站
         排序：名称匹配优先级 > AGI分数
         """
         search_pattern = f"%{query_string}%"
 
-        from sqlalchemy import or_, case
+        from sqlalchemy import case, or_
 
         sql_query = (
             select(Company)
@@ -165,15 +166,13 @@ class CompanyService:
 
         # 工时记录统计
         work_hours_result = await self.db.execute(
-            select(func.count(WorkHourRecord.id))
-            .where(WorkHourRecord.company_id == company_id)
+            select(func.count(WorkHourRecord.id)).where(WorkHourRecord.company_id == company_id)
         )
         total_records = work_hours_result.scalar() or 0
 
         # 已验证员工数
         verified_employees_result = await self.db.execute(
-            select(func.count(func.distinct(WorkHourRecord.user_id)))
-            .where(
+            select(func.count(func.distinct(WorkHourRecord.user_id))).where(
                 WorkHourRecord.company_id == company_id,
                 WorkHourRecord.status == "verified",
             )
@@ -182,8 +181,7 @@ class CompanyService:
 
         # 平均工时
         avg_hours_result = await self.db.execute(
-            select(func.avg(WorkHourRecord.weekly_hours))
-            .where(
+            select(func.avg(WorkHourRecord.weekly_hours)).where(
                 WorkHourRecord.company_id == company_id,
                 WorkHourRecord.status == "verified",
             )
@@ -203,18 +201,18 @@ class CompanyService:
     async def delete_company(self, company_id: str) -> bool:
         """删除企业（软删除或硬删除）"""
         company = await self.get_company(company_id)
-        
+
         await self.db.delete(company)
         await self.db.commit()
-        
+
         return True
 
     async def verify_company(self, company_id: str) -> Company:
         """验证企业（通过审核）"""
         company = await self.get_company(company_id)
         company.verification_status = "verified"
-        
+
         await self.db.commit()
         await self.db.refresh(company)
-        
+
         return company

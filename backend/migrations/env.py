@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import get_settings
 from app.database import Base
-from app.models import Company, Evidence, Product, User, WorkHourRecord
 
 config = context.config
 settings = get_settings()

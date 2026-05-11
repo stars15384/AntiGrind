@@ -3,11 +3,10 @@ Tests for Admin API Endpoints
 覆盖: admin.py (运营后台API)
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
-from fastapi import FastAPI
 
 
 class TestAdminAuth:
@@ -16,25 +15,29 @@ class TestAdminAuth:
     @pytest.fixture
     def client(self):
         from app.main import app
+
         return TestClient(app)
 
     def test_admin_dashboard_without_auth(self, client):
         """测试未认证访问仪表盘应返回401/403"""
         response = client.get("/api/admin/dashboard/stats")
-        assert response.status_code in [401, 403], \
+        assert response.status_code in [401, 403], (
             f"未认证访问应返回401或403，实际返回{response.status_code}"
+        )
 
     def test_admin_pending_certifications_without_auth(self, client):
         """测试未认证访问待审核列表应返回401/403"""
         response = client.get("/api/admin/certifications/pending")
-        assert response.status_code in [401, 403], \
+        assert response.status_code in [401, 403], (
             f"未认证访问应返回401或403，实际返回{response.status_code}"
+        )
 
     def test_admin_users_list_without_auth(self, client):
         """测试未认证访问用户列表应返回401/403"""
         response = client.get("/api/admin/users")
-        assert response.status_code in [401, 403], \
+        assert response.status_code in [401, 403], (
             f"未认证访问应返回401或403，实际返回{response.status_code}"
+        )
 
 
 class TestAdminDashboardStats:
@@ -47,6 +50,7 @@ class TestAdminDashboardStats:
         注意：此fixture需要有效的admin用户和JWT机制
         """
         from app.main import app
+
         return TestClient(app)
 
     def test_dashboard_returns_correct_structure(self, admin_client):

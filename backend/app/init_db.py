@@ -6,15 +6,23 @@ Run: python -m app.init_db
 import asyncio
 import uuid
 from datetime import datetime, timedelta
+
 import bcrypt
 
-from app.database import engine, Base
-from app.models.models import User, Company, WorkHourRecord, Product, Certification, CertificationBadge
+from app.database import Base, engine
+from app.models.models import (
+    Certification,
+    CertificationBadge,
+    Company,
+    Product,
+    User,
+    WorkHourRecord,
+)
 
 
 def hash_password(password: str) -> str:
     """Safe password hashing for bcrypt"""
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 async def init_db():
@@ -130,16 +138,14 @@ async def seed_data():
         # Insert companies
         company_ids = []
         for comp in companies_data:
-            await conn.execute(
-                Company.__table__.insert().values(**comp)
-            )
+            await conn.execute(Company.__table__.insert().values(**comp))
             company_ids.append(comp["id"])
-        
+
         print(f"[OK] Created {len(companies_data)} companies")
 
         # ==================== 2. Create Users ====================
         users_data = []
-        
+
         # Create employee users for each company
         employee_names = [
             ("zhang_wei", "tencent"),
@@ -153,21 +159,23 @@ async def seed_data():
             ("wu_hao", "netease"),
             ("sun_lei", "xiaomi"),
         ]
-        
+
         for i, (username, domain) in enumerate(employee_names):
             company_idx = i % len(company_ids)
-            users_data.append({
-                "id": str(uuid.uuid4()),
-                "username": username,
-                "email": f"{username}@{domain}.com",
-                "password_hash": hash_password("password123"),
-                "role": "employee",
-                "company_id": company_ids[company_idx],
-                "is_active": True,
-                "is_verified": True,
-                "created_at": datetime(2025, 1, 1) + timedelta(days=i * 5),
-            })
-        
+            users_data.append(
+                {
+                    "id": str(uuid.uuid4()),
+                    "username": username,
+                    "email": f"{username}@{domain}.com",
+                    "password_hash": hash_password("password123"),
+                    "role": "employee",
+                    "company_id": company_ids[company_idx],
+                    "is_active": True,
+                    "is_verified": True,
+                    "created_at": datetime(2025, 1, 1) + timedelta(days=i * 5),
+                }
+            )
+
         # Add admin users
         admin_users = [
             {
@@ -193,46 +201,44 @@ async def seed_data():
                 "created_at": datetime(2025, 2, 15),
             },
         ]
-        
+
         users_data.extend(admin_users)
 
         for user in users_data:
-            await conn.execute(
-                User.__table__.insert().values(**user)
-            )
-        
+            await conn.execute(User.__table__.insert().values(**user))
+
         print(f"[OK] Created {len(users_data)} users")
 
         # ==================== 3. Create Work Hour Records ====================
         work_hour_records = []
-        
+
         for i in range(len(company_ids)):
             company_id = company_ids[i]
-            
+
             # Create several records per company
             num_records = 2 + (i % 3)
             for j in range(num_records):
-                work_hour_records.append({
-                    "id": str(uuid.uuid4()),
-                    "company_id": company_id,
-                    "user_id": users_data[min(i + j, len(users_data)-1)]["id"],
-                    "weekly_hours": 38 + (i * 2),
-                    "weekend_policy": ["double_rest", "big_small_week"][j % 2],
-                    "overtime_compensation": ["legal", "fixed_subsidy"][j % 2],
-                    "shift_policy": ["no_shift", "occasional"][j % 2],
-                    "vibe_score": 70 + (i * 3),
-                    "verification_count": 3 + (j * 2),
-                    "status": "verified" if j < num_records - 1 else "pending",
-                    "source": "dingtalk",
-                    "notes": f"Record {j+1} submission",
-                    "created_at": datetime.now() - timedelta(days=j*7),
-                })
-        
+                work_hour_records.append(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "company_id": company_id,
+                        "user_id": users_data[min(i + j, len(users_data) - 1)]["id"],
+                        "weekly_hours": 38 + (i * 2),
+                        "weekend_policy": ["double_rest", "big_small_week"][j % 2],
+                        "overtime_compensation": ["legal", "fixed_subsidy"][j % 2],
+                        "shift_policy": ["no_shift", "occasional"][j % 2],
+                        "vibe_score": 70 + (i * 3),
+                        "verification_count": 3 + (j * 2),
+                        "status": "verified" if j < num_records - 1 else "pending",
+                        "source": "dingtalk",
+                        "notes": f"Record {j + 1} submission",
+                        "created_at": datetime.now() - timedelta(days=j * 7),
+                    }
+                )
+
         for record in work_hour_records:
-            await conn.execute(
-                WorkHourRecord.__table__.insert().values(**record)
-            )
-        
+            await conn.execute(WorkHourRecord.__table__.insert().values(**record))
+
         print(f"[OK] Created {len(work_hour_records)} work hour records")
 
         # ==================== 4. Create Products ====================
@@ -270,10 +276,8 @@ async def seed_data():
         ]
 
         for product in products_data:
-            await conn.execute(
-                Product.__table__.insert().values(**product)
-            )
-        
+            await conn.execute(Product.__table__.insert().values(**product))
+
         print(f"[OK] Created {len(products_data)} products")
 
         # ==================== 5. Create Certifications ====================
@@ -303,9 +307,7 @@ async def seed_data():
         ]
 
         for cert in certifications_data:
-            await conn.execute(
-                Certification.__table__.insert().values(**cert)
-            )
+            await conn.execute(Certification.__table__.insert().values(**cert))
 
         # Create badges
         badges_data = [
@@ -330,33 +332,31 @@ async def seed_data():
         ]
 
         for badge in badges_data:
-            await conn.execute(
-                CertificationBadge.__table__.insert().values(**badge)
-            )
-        
+            await conn.execute(CertificationBadge.__table__.insert().values(**badge))
+
         print(f"[OK] Created {len(certifications_data)} certifications")
         print(f"[OK] Created {len(badges_data)} certification badges")
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("[SUCCESS] Test data populated!")
-    print("="*60)
+    print("=" * 60)
     print("\n[STATS] Data Summary:")
     print(f"  - Companies: {len(companies_data)}")
     print(f"  - Users: {len(users_data)}")
     print(f"  - Work Hour Records: {len(work_hour_records)}")
     print(f"  - Products: {len(products_data)}")
     print(f"  - Certifications: {len(certifications_data)}")
-    
+
     print("\n[ACCOUNTS] Test Accounts:")
     print("  Employee accounts:")
     for user in users_data[:5]:
         role = "[Employee]" if user["role"] == "employee" else "[Admin]"
         print(f"    * {user['username']} / password123 ({role})")
-    
+
     print("\n  Admin accounts:")
     for admin in admin_users:
         print(f"    * {admin['username']} / admin123 ([Company Admin])")
-    
+
     print("\n[URLS] Access URLs:")
     print("  - Backend API: http://localhost:8000")
     print("  - API Docs: http://localhost:8000/docs")
@@ -364,10 +364,10 @@ async def seed_data():
 
 
 async def main():
-    print("="*60)
+    print("=" * 60)
     print("AntiGrind Database Init Script")
-    print("="*60)
-    
+    print("=" * 60)
+
     await init_db()
     await seed_data()
 

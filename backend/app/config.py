@@ -62,9 +62,7 @@ def get_settings() -> Settings:
                 "生产环境必须设置安全的JWT_SECRET_KEY（至少32字符），请通过环境变量配置"
             )
         if settings.cors_origins == "*":
-            raise ValueError(
-                "生产环境不允许CORS_ORIGINS设置为*，请明确指定允许的域名"
-            )
+            raise ValueError("生产环境不允许CORS_ORIGINS设置为*，请明确指定允许的域名")
     else:
         if os.environ.get("JWT_SECRET_KEY") is None:
             warnings.warn(

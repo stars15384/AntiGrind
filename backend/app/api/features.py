@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from app.feature_flags import get_feature_flags
 
 router = APIRouter(prefix="/api/features", tags=["feature-flags"])

@@ -1,12 +1,10 @@
 import pytest
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import DeclarativeBase
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.main import app
 from app.database import Base, get_db
+from app.main import app
 from app.models import User
-
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test_antigrind.db"
 
@@ -42,20 +40,12 @@ async def client(db_session: AsyncSession):
 
 @pytest.fixture
 def valid_user_data():
-    return {
-        "username": "testuser",
-        "email": "test@example.com",
-        "password": "TestPass123!"
-    }
+    return {"username": "testuser", "email": "test@example.com", "password": "TestPass123!"}
 
 
 @pytest.fixture
 def invalid_password_data():
-    return {
-        "username": "weakuser",
-        "email": "weak@example.com",
-        "password": "123"
-    }
+    return {"username": "weakuser", "email": "weak@example.com", "password": "123"}
 
 
 class TestUserRegistration:
@@ -74,7 +64,7 @@ class TestUserRegistration:
     @pytest.mark.asyncio
     async def test_register_duplicate_username(self, client: AsyncClient, valid_user_data):
         await client.post("/api/auth/register", json=valid_user_data)
-        
+
         duplicate_data = valid_user_data.copy()
         duplicate_data["email"] = "another@example.com"
         response = await client.post("/api/auth/register", json=duplicate_data)
@@ -84,7 +74,7 @@ class TestUserRegistration:
     @pytest.mark.asyncio
     async def test_register_duplicate_email(self, client: AsyncClient, valid_user_data):
         await client.post("/api/auth/register", json=valid_user_data)
-        
+
         duplicate_data = valid_user_data.copy()
         duplicate_data["username"] = "anotheruser"
         response = await client.post("/api/auth/register", json=duplicate_data)
@@ -92,7 +82,9 @@ class TestUserRegistration:
         assert "already registered" in response.json()["detail"].lower()
 
     @pytest.mark.asyncio
-    async def test_register_weak_password_rejected(self, client: AsyncClient, invalid_password_data):
+    async def test_register_weak_password_rejected(
+        self, client: AsyncClient, invalid_password_data
+    ):
         response = await client.post("/api/auth/register", json=invalid_password_data)
         assert response.status_code == 422
         errors = response.json()["detail"]
@@ -100,52 +92,32 @@ class TestUserRegistration:
 
     @pytest.mark.asyncio
     async def test_register_short_username_rejected(self, client: AsyncClient):
-        data = {
-            "username": "ab",
-            "email": "short@example.com",
-            "password": "ValidPass123!"
-        }
+        data = {"username": "ab", "email": "short@example.com", "password": "ValidPass123!"}
         response = await client.post("/api/auth/register", json=data)
         assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_register_invalid_email_rejected(self, client: AsyncClient):
-        data = {
-            "username": "validuser",
-            "email": "not-an-email",
-            "password": "ValidPass123!"
-        }
+        data = {"username": "validuser", "email": "not-an-email", "password": "ValidPass123!"}
         response = await client.post("/api/auth/register", json=data)
         assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_register_password_without_uppercase_rejected(self, client: AsyncClient):
-        data = {
-            "username": "noupper",
-            "email": "noupper@example.com",
-            "password": "lowercase123!"  
-        }
+        data = {"username": "noupper", "email": "noupper@example.com", "password": "lowercase123!"}
         response = await client.post("/api/auth/register", json=data)
         assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_register_password_without_number_rejected(self, client: AsyncClient):
-        data = {
-            "username": "nonum",
-            "email": "nonum@example.com",
-            "password": "NoNumbers!!"
-        }
+        data = {"username": "nonum", "email": "nonum@example.com", "password": "NoNumbers!!"}
         response = await client.post("/api/auth/register", json=data)
         assert response.status_code == 422
 
     @pytest.mark.asyncio
     async def test_register_password_too_long_rejected(self, client: AsyncClient):
         long_password = "A1!" + "a" * 130
-        data = {
-            "username": "longpass",
-            "email": "longpass@example.com",
-            "password": long_password
-        }
+        data = {"username": "longpass", "email": "longpass@example.com", "password": long_password}
         response = await client.post("/api/auth/register", json=data)
         assert response.status_code == 422
 
@@ -159,7 +131,7 @@ class TestUserLogin:
 
         login_data = {
             "username": valid_user_data["username"],
-            "password": valid_user_data["password"]
+            "password": valid_user_data["password"],
         }
         response = await client.post("/api/auth/login", data=login_data)
         assert response.status_code == 200
@@ -171,19 +143,13 @@ class TestUserLogin:
     async def test_login_wrong_password(self, client: AsyncClient, valid_user_data):
         await client.post("/api/auth/register", json=valid_user_data)
 
-        login_data = {
-            "username": valid_user_data["username"],
-            "password": "WrongPassword123!"
-        }
+        login_data = {"username": valid_user_data["username"], "password": "WrongPassword123!"}
         response = await client.post("/api/auth/login", data=login_data)
         assert response.status_code == 401
 
     @pytest.mark.asyncio
     async def test_login_nonexistent_user(self, client: AsyncClient):
-        login_data = {
-            "username": "nonexistent",
-            "password": "SomePass123!"
-        }
+        login_data = {"username": "nonexistent", "password": "SomePass123!"}
         response = await client.post("/api/auth/login", data=login_data)
         assert response.status_code == 401
 
@@ -193,15 +159,17 @@ class TestUserLogin:
 
         login_data = {
             "username": valid_user_data["username"],
-            "password": valid_user_data["password"]
+            "password": valid_user_data["password"],
         }
         response = await client.post("/api/auth/login", data=login_data)
         token = response.json()["access_token"]
 
         import jwt
+
         from app.config import get_settings
+
         settings = get_settings()
-        
+
         decoded = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
         assert "sub" in decoded
         assert "exp" in decoded
@@ -219,19 +187,21 @@ class TestAuthentication:
     @pytest.mark.asyncio
     async def test_access_protected_endpoint_with_invalid_token(self, client: AsyncClient):
         response = await client.get(
-            "/api/auth/profile",
-            headers={"Authorization": "Bearer invalid.token.here"}
+            "/api/auth/profile", headers={"Authorization": "Bearer invalid.token.here"}
         )
         # 无效token应返回401 Unauthorized
         assert response.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_access_profile_with_valid_token(self, client: AsyncClient, valid_user_data, db_session: AsyncSession):
+    async def test_access_profile_with_valid_token(
+        self, client: AsyncClient, valid_user_data, db_session: AsyncSession
+    ):
         register_response = await client.post("/api/auth/register", json=valid_user_data)
         assert register_response.status_code == 200
 
         # 从数据库查询用户ID（更稳定的方式）
         from sqlalchemy import select
+
         result = await db_session.execute(
             select(User).where(User.username == valid_user_data["username"])
         )
@@ -241,15 +211,14 @@ class TestAuthentication:
 
         login_data = {
             "username": valid_user_data["username"],
-            "password": valid_user_data["password"]
+            "password": valid_user_data["password"],
         }
         login_response = await client.post("/api/auth/login", data=login_data)
         assert login_response.status_code == 200
         token = login_response.json()["access_token"]
 
         profile_response = await client.get(
-            "/api/auth/profile",
-            headers={"Authorization": f"Bearer {token}"}
+            "/api/auth/profile", headers={"Authorization": f"Bearer {token}"}
         )
         assert profile_response.status_code == 200
         profile_data = profile_response.json()

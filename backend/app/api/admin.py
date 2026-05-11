@@ -1,12 +1,22 @@
-from typing import Annotated, Optional
 from datetime import datetime, timedelta
+from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.api.auth import get_current_user
 from app.database import get_db
-from app.models import User, Company, Certification, WorkHourRecord, Evidence, AttendanceScreenshot, AnonymousQA
+from app.models import (
+    AnonymousQA,
+    AttendanceScreenshot,
+    Certification,
+    Company,
+    Evidence,
+    User,
+    WorkHourRecord,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -26,8 +36,7 @@ async def get_dashboard_stats(
     total_users = total_users_result.scalar() or 0
 
     active_users_7d = await db.execute(
-        select(func.count(User.id))
-        .where(User.updated_at >= datetime.utcnow() - timedelta(days=7))
+        select(func.count(User.id)).where(User.updated_at >= datetime.utcnow() - timedelta(days=7))
     )
     active_count = active_users_7d.scalar() or 0
 
@@ -35,14 +44,14 @@ async def get_dashboard_stats(
     total_companies = total_companies_result.scalar() or 0
 
     certified_companies = await db.execute(
-        select(func.count(Company.id))
-        .where(Company.certification_status == "certified")
+        select(func.count(Company.id)).where(Company.certification_status == "certified")
     )
     certified_count = certified_companies.scalar() or 0
 
     pending_certifications = await db.execute(
-        select(func.count(Certification.id))
-        .where(Certification.status.in_(["pending", "under_review"]))
+        select(func.count(Certification.id)).where(
+            Certification.status.in_(["pending", "under_review"])
+        )
     )
     pending_cert_count = pending_certifications.scalar() or 0
 
@@ -59,16 +68,11 @@ async def get_dashboard_stats(
     qa_count = total_qa.scalar() or 0
 
     avg_agi_result = await db.execute(
-        select(func.avg(Company.agi_score))
-        .where(Company.agi_score.isnot(None))
+        select(func.avg(Company.agi_score)).where(Company.agi_score.isnot(None))
     )
     avg_agi = avg_agi_result.scalar() or 0
 
-    recent_registrations = await db.execute(
-        select(User)
-        .order_by(User.created_at.desc())
-        .limit(5)
-    )
+    recent_registrations = await db.execute(select(User).order_by(User.created_at.desc()).limit(5))
     recent_users = recent_registrations.scalars().all()
 
     return {
@@ -121,8 +125,9 @@ async def get_pending_certifications(
     certifications = result.scalars().all()
 
     count_result = await db.execute(
-        select(func.count(Certification.id))
-        .where(Certification.status.in_(["pending", "under_review"]))
+        select(func.count(Certification.id)).where(
+            Certification.status.in_(["pending", "under_review"])
+        )
     )
     total_count = count_result.scalar() or 0
 
@@ -161,8 +166,7 @@ async def list_users(
 
     if search:
         query = query.where(
-            (User.username.ilike(f"%{search}%")) |
-            (User.email.ilike(f"%{search}%"))
+            (User.username.ilike(f"%{search}%")) | (User.email.ilike(f"%{search}%"))
         )
 
     if role:
@@ -175,11 +179,7 @@ async def list_users(
     total_result = await db.execute(count_query)
     total_count = total_result.scalar() or 0
 
-    result = await (
-        query.order_by(User.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-    )
+    result = await query.order_by(User.created_at.desc()).offset(offset).limit(limit)
     users = result.scalars().all()
 
     return {
@@ -235,7 +235,7 @@ async def admin_review_certification(
     db: Annotated[AsyncSession, Depends(get_db)],
     admin: User = Depends(require_admin),
 ):
-    from app.schemas import CertificationReview
+    from app.schemas import CertificationReview  # noqa: F401
 
     result = await db.execute(
         select(Certification)
@@ -248,7 +248,9 @@ async def admin_review_certification(
         raise HTTPException(status_code=404, detail="Certification not found")
 
     if certification.status not in ["pending", "under_review"]:
-        raise HTTPException(status_code=400, detail="Certification cannot be reviewed in current status")
+        raise HTTPException(
+            status_code=400, detail="Certification cannot be reviewed in current status"
+        )
 
     approved = review_data.get("approved", False)
     notes = review_data.get("notes", "")
@@ -269,10 +271,12 @@ async def admin_review_certification(
             company.certification_expires_at = certification.expires_at
 
             import hashlib
+
             badge_data = f"{company.id}:{certification_id}:{datetime.utcnow().timestamp()}"
             badge_code = hashlib.sha256(badge_data.encode()).hexdigest()[:16].upper()
 
             from app.models import CertificationBadge
+
             badge = CertificationBadge(
                 company_id=company.id,
                 certification_id=certification.id,
@@ -334,14 +338,20 @@ async def get_certification_detail(
             "status": certification.status,
             "submitted_at": certification.created_at.isoformat(),
             "review_notes": certification.review_notes,
-            "approved_at": certification.approved_at.isoformat() if certification.approved_at else None,
+            "approved_at": (
+                certification.approved_at.isoformat() if certification.approved_at else None
+            ),
             "policy_document_url": certification.policy_document_url,
             "evidence_urls": certification.evidence_urls,
         },
         "company": {
             "id": certification.company.id if certification.company else None,
             "name": certification.company.name if certification.company else None,
-            "agi_score": float(certification.company.agi_score) if certification.company and certification.company.agi_score else None,
+            "agi_score": (
+                float(certification.company.agi_score)
+                if certification.company and certification.company.agi_score
+                else None
+            ),
             "industry": certification.company.industry if certification.company else None,
         },
         "submitter": {
@@ -364,6 +374,7 @@ async def get_certification_detail(
 
 
 # ==================== 公司管理 API ====================
+
 
 @router.get("/companies")
 async def list_companies(
@@ -390,11 +401,7 @@ async def list_companies(
     total_result = await db.execute(count_query)
     total_count = total_result.scalar() or 0
 
-    result = await (
-        query.order_by(Company.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-    )
+    result = await query.order_by(Company.created_at.desc()).offset(offset).limit(limit)
     companies = result.scalars().all()
 
     return {
@@ -406,7 +413,7 @@ async def list_companies(
                 "agi_score": float(c.agi_score) if c.agi_score else None,
                 "certification_status": c.certification_status,
                 "certification_level": c.certification_level,
-                "employee_count": getattr(c, 'employee_count', 0) or 0,
+                "employee_count": getattr(c, "employee_count", 0) or 0,
                 "created_at": c.created_at.isoformat(),
                 "updated_at": c.updated_at.isoformat() if c.updated_at else None,
             }
@@ -435,15 +442,15 @@ async def get_company_detail(
 
     # Get employee count
     emp_count_result = await db.execute(
-        select(func.count())
-        .select_from(select(User).where(User.company_id == company_id).subquery())
+        select(func.count()).select_from(
+            select(User).where(User.company_id == company_id).subquery()
+        )
     )
     employee_count = emp_count_result.scalar() or 0
 
     # Get work hours records count
     wh_count_result = await db.execute(
-        select(func.count(WorkHourRecord.id))
-        .where(WorkHourRecord.company_id == company_id)
+        select(func.count(WorkHourRecord.id)).where(WorkHourRecord.company_id == company_id)
     )
     work_hours_count = wh_count_result.scalar() or 0
 
@@ -497,7 +504,7 @@ async def adjust_agi_score(
         raise HTTPException(status_code=404, detail="Company not found")
 
     new_score = adjustment_data.get("agi_score")
-    reason = adjustment_data.get("reason", "")
+    reason = adjustment_data.get("reason", "")  # noqa: F841
 
     if new_score is None or not isinstance(new_score, (int, float)):
         raise HTTPException(status_code=400, detail="Valid AGI score required")
@@ -509,8 +516,8 @@ async def adjust_agi_score(
     company.agi_score = float(new_score)
     company.updated_at = datetime.utcnow()
 
-    # Log the adjustment (simplified - in production use proper logging table)
-    print(f"[ADMIN] AGI Adjustment: Company {company_id}, {old_score} -> {new_score}, Reason: {reason}, By: {admin.username}")
+    # Log the adjustment
+    print(f"[ADMIN] AGI: {company_id} {old_score}->{new_score} by {admin.username}")
 
     await db.commit()
     await db.refresh(company)
@@ -526,6 +533,7 @@ async def adjust_agi_score(
 
 
 # ==================== 批量操作 API ====================
+
 
 @router.post("/users/batch-status")
 async def batch_update_user_status(
@@ -563,6 +571,7 @@ async def batch_update_user_status(
 
 # ==================== 数据导出 API ====================
 
+
 @router.get("/export/users")
 async def export_users(
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -579,8 +588,7 @@ async def export_users(
 
     if search:
         query = query.where(
-            (User.username.ilike(f"%{search}%")) |
-            (User.email.ilike(f"%{search}%"))
+            (User.username.ilike(f"%{search}%")) | (User.email.ilike(f"%{search}%"))
         )
 
     if role:
@@ -595,25 +603,30 @@ async def export_users(
     if format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(["ID", "Username", "Email", "Role", "Type", "Status", "Created At", "Last Active"])
-        
+        writer.writerow(
+            ["ID", "Username", "Email", "Role", "Type", "Status", "Created At", "Last Active"]
+        )
+
         for u in users:
-            writer.writerow([
-                u.id,
-                u.username,
-                u.email,
-                u.role,
-                u.user_type,
-                "Active" if u.is_active else "Inactive",
-                u.created_at.isoformat(),
-                u.updated_at.isoformat() if u.updated_at else "",
-            ])
-        
+            writer.writerow(
+                [
+                    u.id,
+                    u.username,
+                    u.email,
+                    u.role,
+                    u.user_type,
+                    "Active" if u.is_active else "Inactive",
+                    u.created_at.isoformat(),
+                    u.updated_at.isoformat() if u.updated_at else "",
+                ]
+            )
+
         from fastapi.responses import Response
+
         return Response(
             content=output.getvalue(),
             media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=users_export.csv"}
+            headers={"Content-Disposition": "attachment; filename=users_export.csv"},
         )
 
     elif format == "json":
@@ -653,27 +666,29 @@ async def export_companies(
     if format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow([
-            "ID", "Name", "Industry", "AGI Score", "Cert Status",
-            "Cert Level", "Created At"
-        ])
-        
+        writer.writerow(
+            ["ID", "Name", "Industry", "AGI Score", "Cert Status", "Cert Level", "Created At"]
+        )
+
         for c in companies:
-            writer.writerow([
-                c.id,
-                c.name,
-                c.industry,
-                c.agi_score,
-                c.certification_status,
-                c.certification_level,
-                c.created_at.isoformat(),
-            ])
-        
+            writer.writerow(
+                [
+                    c.id,
+                    c.name,
+                    c.industry,
+                    c.agi_score,
+                    c.certification_status,
+                    c.certification_level,
+                    c.created_at.isoformat(),
+                ]
+            )
+
         from fastapi.responses import Response
+
         return Response(
             content=output.getvalue(),
             media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=companies_export.csv"}
+            headers={"Content-Disposition": "attachment; filename=companies_export.csv"},
         )
 
     return {"companies": [], "message": "Use CSV format"}
@@ -681,44 +696,44 @@ async def export_companies(
 
 # ==================== 认证统计 API ====================
 
+
 @router.get("/certifications/stats")
 async def get_certification_stats(
     db: Annotated[AsyncSession, Depends(get_db)],
     admin: User = Depends(require_admin),
 ):
     pending_result = await db.execute(
-        select(func.count(Certification.id))
-        .where(Certification.status == "pending")
+        select(func.count(Certification.id)).where(Certification.status == "pending")
     )
     pending = pending_result.scalar() or 0
 
     in_progress_result = await db.execute(
-        select(func.count(Certification.id))
-        .where(Certification.status == "under_review")
+        select(func.count(Certification.id)).where(Certification.status == "under_review")
     )
     in_progress = in_progress_result.scalar() or 0
 
     approved_today = await db.execute(
-        select(func.count(Certification.id))
-        .where(
+        select(func.count(Certification.id)).where(
             Certification.status == "approved",
-            Certification.approved_at >= datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            Certification.approved_at
+            >= datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0),
         )
     )
     completed_today = approved_today.scalar() or 0
 
     total_approved = await db.execute(
-        select(func.count(Certification.id))
-        .where(Certification.status == "approved")
+        select(func.count(Certification.id)).where(Certification.status == "approved")
     )
     approved_total = total_approved.scalar() or 0
 
-    total_submitted = await db.execute(
-        select(func.count(Certification.id))
-    )
+    total_submitted = await db.execute(select(func.count(Certification.id)))
     submitted_total = total_submitted.scalar() or 0
 
-    approval_rate = f"{((approved_total / submitted_total) * 100):.1f}%" if submitted_total > 0 else "0%"
+    if submitted_total > 0:
+        rate = (approved_total / submitted_total) * 100
+        approval_rate = f"{rate:.1f}%"
+    else:
+        approval_rate = "0%"
 
     return {
         "pending": pending,
@@ -732,6 +747,7 @@ async def get_certification_stats(
 
 
 # ==================== 申诉管理 API（模拟） ====================
+
 
 @router.get("/certifications/appeals")
 async def list_appeals(
@@ -780,7 +796,10 @@ async def respond_to_appeal(
 
     valid_actions = ["accept", "reject", "reopen"]
     if action not in valid_actions:
-        raise HTTPException(status_code=400, detail=f"Invalid action. Must be one of: {valid_actions}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid action. Must be one of: {valid_actions}",
+        )
 
     print(f"[ADMIN] Appeal Response: Cert {cert_id}, Action: {action}, Notes: {notes}")
 

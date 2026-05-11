@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(ruff check *)",
+      "Bash(python -m ruff check app/api/admin.py)",
+      "Bash(python -m ruff check .)",
+      "Bash(python -m ruff format .)",
+      "Bash(python -m ruff check . --fix)",
+      "Bash(python -m ruff check . --select F821,N818,E501,E402)"
     ]
   }
 }

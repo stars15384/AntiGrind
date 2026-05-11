@@ -2,13 +2,13 @@ import uuid
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy import select, func
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth import get_current_user
 from app.database import get_db
-from app.models import Company, AttendanceScreenshot, User
+from app.models import AttendanceScreenshot, Company, User
 from app.schemas import AttendanceScreenshotResponse, CompanyAttendanceStats
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
@@ -28,9 +28,11 @@ async def upload_attendance_screenshot(
 
     valid_sources = ["dingtalk", "feishu", "other"]
     if source not in valid_sources:
-        raise HTTPException(status_code=400, detail=f"Invalid source. Must be one of: {valid_sources}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid source. Must be one of: {valid_sources}"
+        )
 
-    file_path = f"attendance/{current_user.id}/{str4()}_{file.filename}"
+    file_path = f"attendance/{current_user.id}/{uuid.uuid4().hex}_{file.filename}"
 
     screenshot = AttendanceScreenshot(
         user_id=current_user.id,
@@ -73,7 +75,9 @@ async def get_company_attendance_stats(
         raise HTTPException(status_code=404, detail="Company not found")
 
     total_result = await db.execute(
-        select(func.count(AttendanceScreenshot.id)).where(AttendanceScreenshot.company_id == company_id)
+        select(func.count(AttendanceScreenshot.id)).where(
+            AttendanceScreenshot.company_id == company_id
+        )
     )
     total_screenshots = total_result.scalar() or 0
 
@@ -123,4 +127,3 @@ async def verify_screenshot(
     await db.commit()
     await db.refresh(screenshot)
     return {"status": "success", "message": "Screenshot verified"}
-

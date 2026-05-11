@@ -3,9 +3,9 @@ Tests for Rankings Service and API
 覆盖: ranking_service.py, rankings.py (API)
 """
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.ranking_service import RankingService
@@ -98,6 +98,7 @@ class TestRankingService:
         main_result.scalars.return_value.all.return_value = []
 
         call_count = 0
+
         async def execute_side_effect(*args, **kwargs):
             nonlocal call_count
             call_count += 1
@@ -134,6 +135,7 @@ class TestRankingService:
         main_result.scalars.return_value.all.return_value = []
 
         call_count = 0
+
         async def execute_side_effect(*args, **kwargs):
             nonlocal call_count
             call_count += 1
@@ -267,7 +269,9 @@ class TestRankingsAPI:
     @pytest.fixture
     def client(self):
         from fastapi.testclient import TestClient
+
         from app.main import app
+
         return TestClient(app)
 
     def test_rankings_endpoint_exists(self, client):
@@ -278,7 +282,9 @@ class TestRankingsAPI:
 
     def test_rankings_endpoint_accepts_query_params(self, client):
         """测试端点接受查询参数"""
-        response = client.get("/api/rankings?industry=tech&limit=10&sort_by=agi_score&sort_order=asc")
+        response = client.get(
+            "/api/rankings?industry=tech&limit=10&sort_by=agi_score&sort_order=asc"
+        )
         assert response.status_code in [200, 422], f"Unexpected status: {response.status_code}"
 
     def test_rankings_top_endpoint_exists(self, client):

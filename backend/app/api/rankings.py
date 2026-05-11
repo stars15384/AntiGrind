@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -15,7 +15,9 @@ async def get_rankings(
     db: Annotated[AsyncSession, Depends(get_db)],
     industry: Optional[str] = Query(default=None, description="Filter by industry"),
     region: Optional[str] = Query(default=None, description="Filter by region"),
-    sort_by: str = Query(default="agi_score", description="Sort field: agi_score, name, created_at"),
+    sort_by: str = Query(
+        default="agi_score", description="Sort field: agi_score, name, created_at"
+    ),
     sort_order: str = Query(default="asc", description="Sort order: asc, desc"),
     limit: int = Query(default=20, ge=1, le=100, description="Number of results"),
     offset: int = Query(default=0, ge=0, description="Offset for pagination"),
@@ -60,4 +62,6 @@ async def get_industry_comparison(
         comparison = await ranking_service.get_industry_comparison(db=db)
         return comparison
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch industry comparison: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch industry comparison: {str(e)}"
+        )

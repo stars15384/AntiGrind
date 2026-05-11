@@ -1,14 +1,14 @@
 from app.models.models import (
+    AnonymousQA,
+    AttendanceScreenshot,
     Base,
-    User,
-    Company,
-    Product,
-    WorkHourRecord,
-    Evidence,
     Certification,
     CertificationBadge,
-    AttendanceScreenshot,
-    AnonymousQA,
+    Company,
+    Evidence,
+    Product,
+    User,
+    WorkHourRecord,
 )
 
 __all__ = [

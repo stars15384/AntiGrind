@@ -1,5 +1,4 @@
-import uuid
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -9,7 +8,13 @@ from sqlalchemy.orm import selectinload
 from app.api.auth import get_current_user
 from app.database import get_db
 from app.models import Company, User, WorkHourRecord
-from app.schemas import CompanyCreate, CompanyDetail, CompanyResponse, CompanySearchResult, CompanyUpdate
+from app.schemas import (
+    CompanyCreate,
+    CompanyDetail,
+    CompanyResponse,
+    CompanySearchResult,
+    CompanyUpdate,
+)
 
 router = APIRouter(prefix="/companies", tags=["companies"])
 
@@ -20,7 +25,9 @@ async def list_companies(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     verification_status: str | None = Query(None),
-    sort_by: str = Query("agi_score", description="排序字段: agi_score, created_at, name, employee_count"),
+    sort_by: str = Query(
+        "agi_score", description="排序字段: agi_score, created_at, name, employee_count"
+    ),
     sort_order: str = Query("desc", description="排序方向: asc, desc"),
 ):
     query = select(Company).options(selectinload(Company.work_hour_records))
@@ -29,15 +36,16 @@ async def list_companies(
         query = query.where(Company.verification_status == verification_status)
 
     # 根据不同字段排序
-    sort_field = getattr(Company, sort_by, None)
+    sort_field = getattr(Company, sort_by, None)  # noqa: F841
 
     if sort_by == "employee_count":
         # 按员工数量排序（需要子查询）
         from sqlalchemy import func
+
         subquery = (
             select(
                 WorkHourRecord.company_id,
-                func.count(func.distinct(WorkHourRecord.user_id)).label('emp_count')
+                func.count(func.distinct(WorkHourRecord.user_id)).label("emp_count"),
             )
             .group_by(WorkHourRecord.company_id)
             .subquery()
@@ -69,21 +77,22 @@ async def list_companies(
     elif sort_by == "verification_status":
         # 按认证状态排序 (verified > pending > none)
         from sqlalchemy import case as sql_case
+
         if sort_order == "desc":
             query = query.order_by(
                 sql_case(
-                    (Company.verification_status == 'verified', 3),
-                    (Company.verification_status == 'pending', 2),
-                    (Company.verification_status == 'none', 1),
+                    (Company.verification_status == "verified", 3),
+                    (Company.verification_status == "pending", 2),
+                    (Company.verification_status == "none", 1),
                     else_=0,
                 ).desc()
             )
         else:
             query = query.order_by(
                 sql_case(
-                    (Company.verification_status == 'verified', 3),
-                    (Company.verification_status == 'pending', 2),
-                    (Company.verification_status == 'none', 1),
+                    (Company.verification_status == "verified", 3),
+                    (Company.verification_status == "pending", 2),
+                    (Company.verification_status == "none", 1),
                     else_=0,
                 ).asc()
             )
@@ -105,7 +114,7 @@ async def search_companies(
 ):
     search_pattern = f"%{q}%"
 
-    from sqlalchemy import or_, case
+    from sqlalchemy import case, or_
 
     query = (
         select(Company)
@@ -192,4 +201,3 @@ async def update_company(
     await db.commit()
     await db.refresh(company)
     return company
-

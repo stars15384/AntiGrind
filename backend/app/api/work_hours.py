@@ -1,4 +1,3 @@
-import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -74,7 +73,9 @@ async def verify_work_hour_record(
         if record.verification_count >= 5:
             record.status = "verified"
 
-            company_result = await db.execute(select(Company).where(Company.id == record.company_id))
+            company_result = await db.execute(
+                select(Company).where(Company.id == record.company_id)
+            )
             company = company_result.scalar_one_or_none()
             if company:
                 agi_engine = AGIEngine()
@@ -83,4 +84,3 @@ async def verify_work_hour_record(
     await db.commit()
     await db.refresh(record)
     return record
-

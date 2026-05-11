@@ -1,8 +1,7 @@
 import uuid
 from typing import Annotated
 
-import aiofiles
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +26,7 @@ async def upload_evidence(
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Company not found")
 
-    file_path = f"evidences/{current_user.id}/{str4()}_{file.filename}"
+    file_path = f"evidences/{current_user.id}/{uuid.uuid4().hex}_{file.filename}"
 
     evidence = Evidence(
         user_id=current_user.id,
@@ -55,4 +54,3 @@ async def get_evidence(
     if not evidence:
         raise HTTPException(status_code=404, detail="Evidence not found")
     return evidence
-

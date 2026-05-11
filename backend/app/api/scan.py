@@ -1,14 +1,13 @@
-import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import Company, Product
-from app.schemas import ScanResult, CompanyBrief, ProductResponse
+from app.models import Product
+from app.schemas import CompanyBrief, ProductResponse, ScanResult
 
 router = APIRouter(prefix="/scan", tags=["scan"])
 
@@ -47,7 +46,9 @@ async def scan_barcode(
         brand_owner = CompanyBrief(
             id=product.brand_owner.id,
             name=product.brand_owner.name,
-            agi_score=float(product.brand_owner.agi_score) if product.brand_owner.agi_score else None,
+            agi_score=float(product.brand_owner.agi_score)
+            if product.brand_owner.agi_score
+            else None,
             verification_status=product.brand_owner.verification_status,
         )
 
@@ -55,11 +56,17 @@ async def scan_barcode(
         manufacturer = CompanyBrief(
             id=product.manufacturer.id,
             name=product.manufacturer.name,
-            agi_score=float(product.manufacturer.agi_score) if product.manufacturer.agi_score else None,
+            agi_score=float(product.manufacturer.agi_score)
+            if product.manufacturer.agi_score
+            else None,
             verification_status=product.manufacturer.verification_status,
         )
 
-    if product.brand_owner_id and product.manufacturer_id and product.brand_owner_id != product.manufacturer_id:
+    if (
+        product.brand_owner_id
+        and product.manufacturer_id
+        and product.brand_owner_id != product.manufacturer_id
+    ):
         is_oem = True
 
     agi_score = None
@@ -93,4 +100,3 @@ async def scan_barcode(
         agi_score=agi_score,
         recommendation=recommendation,
     )
-

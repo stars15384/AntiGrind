@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 from typing import Annotated
 
@@ -9,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.auth import get_current_user
 from app.database import get_db
 from app.models import AnonymousQA, Company, User
-from app.schemas import QACreate, QAAnswer, QAResponse
+from app.schemas import QAAnswer, QACreate, QAResponse
 
 router = APIRouter(prefix="/qa", tags=["qa"])
 
@@ -77,4 +76,3 @@ async def answer_question(
     await db.commit()
     await db.refresh(qa)
     return qa
-
