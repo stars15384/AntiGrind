@@ -13,17 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Go for k6
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
       - name: Install k6
-        run: go install go.k6.io/k6/v6@latest
+        uses: grafana/k6-action@v0.3.1
+        with:
+          k6_version: '0.47.0'
 
       - name: Run performance test (if server available)
         run: |
-          # 检查是否有运行中的服务
           if curl -sf http://localhost:8000/health > /dev/null; then
             echo "Server detected, running k6 tests..."
             k6 run --summary-export=results.json backend/tests/performance/load_test.js || true
@@ -41,6 +37,7 @@ jobs:
           name: k6-results
           path: results.json
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: Performance summary
         if: always()
