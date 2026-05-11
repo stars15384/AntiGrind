@@ -1,0 +1,6 @@
+Performance Report - 2026-04-20 20:54:14.355764
+
+/health: 2046.66ms (P95: 2051.02ms)
+/api/companies?limit=10: 2071.8ms (P95: 2080.72ms)
+/api/rankings?limit=10: 2053.97ms (P95: 2079.94ms)
+/api/rankings/industries: 2051.23ms (P95: 2058.31ms)

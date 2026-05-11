@@ -1,0 +1,394 @@
+{
+  "admin": {
+    "layout": {
+      "title": "管理员控制台",
+      "collapse": "收起侧边栏",
+      "logout": "退出登录"
+    },
+    "sidebar": {
+      "dashboard": "仪表板",
+      "users": "用户管理",
+      "companies": "公司管理",
+      "certifications": "认证审核",
+      "analytics": "数据分析",
+      "settings": "系统设置",
+      "logs": "操作日志"
+    },
+    "dashboard": {
+      "title": "管理员仪表板",
+      "welcome": "欢迎回来，管理员",
+      "subtitle": "平台运营数据总览",
+      "stats_cards": {
+        "total_users": "总用户数",
+        "active_users_7d": "7日活跃用户",
+        "total_companies": "注册企业数",
+        "certified_companies": "已认证企业",
+        "pending_reviews": "待审核认证",
+        "avg_agi_score": "平均AGI评分"
+      },
+      "quick_actions": {
+        "title": "快捷操作",
+        "review_certifications": "审核认证申请",
+        "manage_users": "管理用户",
+        "view_analytics": "查看数据分析",
+        "system_settings": "系统设置"
+      },
+      "recent_users": {
+        "title": "最近注册用户",
+        "no_data": "暂无新用户注册"
+      },
+      "activity_feed": {
+        "title": "最近活动",
+        "user_registered": "新用户注册：{{username}}",
+        "cert_submitted": "新认证提交：{{company}}",
+        "cert_approved": "认证通过：{{company}}",
+        "cert_rejected": "认证拒绝：{{company}}"
+      }
+    },
+    "users": {
+      "title": "用户管理",
+      "subtitle": "管理系统中的所有用户账户",
+      "total_count": "共 {{count}} 位用户",
+      "search_placeholder": "搜索用户名或邮箱...",
+      "filters": {
+        "role": "角色",
+        "status": "状态",
+        "date_range": "注册日期",
+        "all": "全部",
+        "active": "活跃",
+        "inactive": "已禁用",
+        "employee": "员工",
+        "company_rep": "公司代表",
+        "admin": "管理员"
+      },
+      "table": {
+        "headers": {
+          "id": "ID",
+          "username": "用户名",
+          "email": "邮箱",
+          "role": "角色",
+          "type": "类型",
+          "status": "状态",
+          "registered": "注册时间",
+          "last_active": "最后活跃",
+          "actions": "操作"
+        },
+        "actions": {
+          "view": "查看",
+          "edit": "编辑",
+          "disable": "禁用",
+          "enable": "启用",
+          "delete": "删除",
+          "assign_role": "分配角色"
+        },
+        "empty": "暂无用户数据",
+        "loading": "加载中..."
+      },
+      "batch_actions": {
+        "title": "批量操作",
+        "selected": "已选择 {{count}} 项",
+        "enable_all": "批量启用",
+        "disable_all": "批量禁用",
+        "export": "导出数据",
+        "confirm": "确认执行"
+      },
+      "detail": {
+        "title": "用户详情",
+        "basic_info": "基本信息",
+        "account_info": "账户信息",
+        "activity_log": "活动记录",
+        "certifications": "相关认证"
+      },
+      "messages": {
+        "status_changed": "用户状态已更新",
+        "role_assigned": "角色分配成功",
+        "user_deleted": "用户已删除",
+        "cannot_modify_self": "无法修改自己的账户",
+        "confirm_delete": "确定要删除此用户吗？此操作不可逆！"
+      }
+    },
+    "companies": {
+      "title": "公司管理",
+      "subtitle": "管理所有注册企业信息",
+      "view_toggle": {
+        "card": "卡片视图",
+        "table": "表格视图"
+      },
+      "search_placeholder": "搜索公司名称...",
+      "filters": {
+        "industry": "行业",
+        "certification_status": "认证状态",
+        "agi_range": "AGI评分范围",
+        "all_statuses": "全部状态",
+        "uncertified": "未认证",
+        "pending": "待审核",
+        "certified": "已认证",
+        "rejected": "已拒绝"
+      },
+      "table": {
+        "headers": {
+          "id": "ID",
+          "name": "公司名称",
+          "industry": "行业",
+          "agi_score": "AGI评分",
+          "cert_status": "认证状态",
+          "employees": "员工数",
+          "created_at": "注册时间",
+          "actions": "操作"
+        }
+      },
+      "detail": {
+        "title": "公司详情",
+        "basic_info": "基本信息",
+        "cert_info": "认证信息",
+        "statistics": "数据统计",
+        "edit_btn": "编辑信息",
+        "adjust_agi": "调整AGI"
+      },
+      "agi_adjustment": {
+        "title": "AGI评分调整",
+        "current_score": "当前评分",
+        "new_score": "新评分",
+        "reason": "调整原因",
+        "submit": "提交调整",
+        "cancel": "取消",
+        "confirm_msg": "确定将AGI从{{from}}调整为{{to}}？",
+        "success": "AGI评分已更新"
+      },
+      "badge_management": {
+        "title": "徽章管理",
+        "current_badge": "当前徽章",
+        "issue_new": "颁发新徽章",
+        "revoke": "撤销徽章",
+        "history": "颁发历史"
+      },
+      "messages": {
+        "company_updated": "公司信息已更新",
+        "agi_adjusted": "AGI评分已调整",
+        "badge_issued": "徽章已颁发",
+        "company_deleted": "公司已删除"
+      }
+    },
+    "certifications": {
+      "title": "认证审核",
+      "subtitle": "管理企业认证申请和审核流程",
+      "queue": {
+        "title": "审核队列",
+        "pending": "待审核",
+        "in_progress": "审核中",
+        "completed": "已完成",
+        "assigned_to_me": "分配给我",
+        "unassigned": "未分配",
+        "drag_hint": "拖拽调整优先级"
+      },
+      "review_form": {
+        "title": "审核表单",
+        "applicant_info": "申请人信息",
+        "company_info": "公司信息",
+        "evidence_review": "证据审查",
+        "policy_compliance": "合规性检查",
+        "decision": "审核决定",
+        "approve": "批准",
+        "reject": "拒绝",
+        "request_info": "要求补充信息",
+        "notes": "审核备注",
+        "notes_placeholder": "请输入审核意见...",
+        "template": "使用模板",
+        "submit": "提交审核"
+      },
+      "batch_review": {
+        "title": "批量审核",
+        "selected": "已选 {{count}} 个申请",
+        "approve_all": "全部批准",
+        "reject_all": "全部拒绝",
+        "warning": "批量操作请谨慎！请确认每个申请都符合标准。"
+      },
+      "appeals": {
+        "title": "申诉管理",
+        "list": "申诉列表",
+        "respond": "回复申诉",
+        "accept": "接受申诉",
+        "reject_appeal": "拒绝申诉",
+        "reopen": "重新审核"
+      },
+      "stats": {
+        "title": "审核统计",
+        "avg_time": "平均审核时间",
+        "approval_rate": "通过率",
+        "pending_count": "待处理数",
+        "my_reviews": "我的审核数"
+      },
+      "templates": {
+        "title": "审核模板",
+        "create": "创建模板",
+        "edit": "编辑模板",
+        "delete": "删除模板",
+        "apply": "应用模板"
+      },
+      "messages": {
+        "review_submitted": "审核已提交",
+        "certification_approved": "认证已批准",
+        "certification_rejected": "认证已拒绝",
+        "info_requested": "已要求补充信息",
+        "appeal_responded": "申诉已回复"
+      }
+    },
+    "analytics": {
+      "title": "数据分析",
+      "subtitle": "平台运营数据和趋势分析",
+      "overview": {
+        "title": "总览",
+        "total_users": "总用户数",
+        "new_users_today": "今日新增",
+        "active_users": "活跃用户",
+        "total_companies": "总企业数",
+        "certified_companies": "已认证",
+        "pending_reviews": "待审核",
+        "avg_agi": "平均AGI",
+        "data_points": "数据点"
+      },
+      "charts": {
+        "user_growth": "用户增长趋势",
+        "cert_trends": "认证申请趋势",
+        "agi_distribution": "AGI评分分布",
+        "industry_distribution": "行业分布",
+        "regional_heatmap": "地域分布",
+        "time_range": "时间范围",
+        "last_7days": "近7天",
+        "last_30days": "近30天",
+        "last_90days": "近90天",
+        "custom": "自定义"
+      },
+      "reports": {
+        "title": "报表中心",
+        "create_report": "创建报表",
+        "saved_reports": "已保存报表",
+        "export_format": "导出格式",
+        "pdf": "PDF文档",
+        "excel": "Excel表格",
+        "csv": "CSV文件"
+      },
+      "export": {
+        "title": "数据导出",
+        "select_data": "选择数据类型",
+        "select_fields": "选择字段",
+        "date_range": "日期范围",
+        "format": "格式",
+        "start_export": "开始导出",
+        "exporting": "正在导出...",
+        "success": "导出成功",
+        "failed": "导出失败"
+      }
+    },
+    "settings": {
+      "title": "系统设置",
+      "subtitle": "配置平台参数和系统选项",
+      "platform": {
+        "title": "平台配置",
+        "platform_name": "平台名称",
+        "description": "平台描述",
+        "logo": "平台Logo",
+        "contact_email": "联系邮箱",
+        "maintenance_mode": "维护模式"
+      },
+      "certification": {
+        "title": "认证标准",
+        "green_threshold": "绿色区域阈值",
+        "yellow_threshold": "黄色区域阈值",
+        "validity_period": "有效期(天)",
+        "required_evidences": "所需证据数",
+        "min_employees": "最少员工数"
+      },
+      "agi_algorithm": {
+        "title": "AGI算法参数",
+        "work_hours_weight": "工作时权重",
+        "weekend_policy_weight": "周末政策权重",
+        "overtime_weight": "加班补偿权重",
+        "evidence_weight": "证据权重",
+        "save_params": "保存参数",
+        "reset_defaults": "恢复默认"
+      },
+      "notifications": {
+        "title": "通知设置",
+        "email_templates": "邮件模板",
+        "smtp_config": "SMTP配置",
+        "test_email": "发送测试邮件"
+      },
+      "messages": {
+        "settings_saved": "设置已保存",
+        "params_updated": "参数已更新",
+        "test_email_sent": "测试邮件已发送"
+      }
+    },
+    "logs": {
+      "title": "操作日志",
+      "subtitle": "查看所有管理员操作记录",
+      "search_placeholder": "搜索日志...",
+      "filters": {
+        "action_type": "操作类型",
+        "user": "操作人",
+        "date_range": "时间范围",
+        "level": "级别"
+      },
+      "table": {
+        "headers": {
+          "timestamp": "时间戳",
+          "operator": "操作人",
+          "action": "操作",
+          "target": "目标对象",
+          "details": "详情",
+          "ip_address": "IP地址"
+        }
+      },
+      "actions": {
+        "view_details": "查看详情",
+        "export_logs": "导出日志",
+        "clear_logs": "清理日志"
+      },
+      "levels": {
+        "info": "信息",
+        "warning": "警告",
+        "error": "错误",
+        "critical": "严重"
+      }
+    },
+    "common": {
+      "confirm": "确认",
+      "cancel": "取消",
+      "save": "保存",
+      "delete": "删除",
+      "edit": "编辑",
+      "create": "创建",
+      "search": "搜索",
+      "filter": "筛选",
+      "reset": "重置",
+      "refresh": "刷新",
+      "export": "导出",
+      "import": "导入",
+      "loading": "加载中...",
+      "no_data": "暂无数据",
+      "error": "出错了",
+      "success": "操作成功",
+      "warning": "警告",
+      "yes": "是",
+      "no": "否",
+      "total": "共 {{count}} 条",
+      "showing": "显示 {{from}}-{{to}} 条",
+      "per_page": "条/页",
+      "previous": "上一页",
+      "next": "下一页",
+      "first": "首页",
+      "last": "末页",
+      "select_all": "全选",
+      "clear_selection": "清除选择",
+      "actions": "操作",
+      "details": "详情",
+      "back": "返回",
+      "close": "关闭",
+      "status": "状态",
+      "created_at": "创建时间",
+      "updated_at": "更新时间",
+      "operations": "操作"
+    }
+  }
+}
